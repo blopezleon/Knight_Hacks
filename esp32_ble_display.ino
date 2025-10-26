@@ -136,6 +136,9 @@ void setup() {
     for(;;);
   }
   
+  // Flip display horizontally (mirror)
+  display.ssd1306_command(0xA0);  // Remap columns from left to right (horizontal flip)
+  
   display.clearDisplay();
   display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
