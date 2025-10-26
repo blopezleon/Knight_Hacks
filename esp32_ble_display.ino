@@ -10,6 +10,7 @@
 // Forward declarations
 void showTime(String timeStr);
 void showNotification(String app, String title);
+void showNavigation(String direction, String distance);
 
 // Display configuration
 #define SCREEN_WIDTH 128
@@ -32,6 +33,11 @@ bool oldDeviceConnected = false;
 String currentTime = "00:00";
 unsigned long lastNotifyTime = 0;
 bool showingNotification = false;
+
+// Navigation state
+bool navigationActive = false;
+String lastNavDirection = "";
+String lastNavDistance = "";
 
 // BLE Server Callbacks
 class MyServerCallbacks: public BLEServerCallbacks {
@@ -60,6 +66,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           currentTime = doc["time"].as<String>();
           showTime(currentTime);
           showingNotification = false;
+          navigationActive = false;
         }
         else if (doc["type"] == "notify") {
           String app = doc["app"].as<String>();
@@ -67,6 +74,15 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           showNotification(app, title);
           lastNotifyTime = millis();
           showingNotification = true;
+        }
+        else if (doc["type"] == "nav") {
+          String direction = doc["direction"].as<String>();
+          String distance = doc["distance"].as<String>();
+          lastNavDirection = direction;
+          lastNavDistance = distance;
+          showNavigation(direction, distance);
+          navigationActive = true;
+          showingNotification = false;
         }
       }
     }
@@ -123,6 +139,29 @@ void showNotification(String app, String title) {
     String titleLine3 = title.substring(24, min(36, (int)title.length()));
     display.println(titleLine3);
   }
+  
+  display.display();
+}
+
+// Display function to show navigation
+void showNavigation(String direction, String distance) {
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
+  
+  // Display direction arrow centered on first line
+  int16_t x1, y1;
+  uint16_t w, h;
+  display.getTextBounds(direction, 0, 0, &x1, &y1, &w, &h);
+  int16_t cursorX = (display.width() - w) / 2;
+  display.setCursor(cursorX, 8);
+  display.println(direction);
+  
+  // Display distance on second line (also centered)
+  display.getTextBounds(distance, 0, 0, &x1, &y1, &w, &h);
+  cursorX = (display.width() - w) / 2;
+  display.setCursor(cursorX, 32);
+  display.println(distance);
   
   display.display();
 }
@@ -186,8 +225,13 @@ void loop() {
   
   // Check if notification should be cleared (after 10 seconds)
   if (showingNotification && (millis() - lastNotifyTime > 10000)) {
-    showTime(currentTime);
     showingNotification = false;
+    // Revert to navigation if active, otherwise show time
+    if (navigationActive) {
+      showNavigation(lastNavDirection, lastNavDistance);
+    } else {
+      showTime(currentTime);
+    }
   }
   
   delay(100);

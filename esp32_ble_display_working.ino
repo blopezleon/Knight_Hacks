@@ -146,6 +146,8 @@ void setup() {
     for(;;);
   }
   
+  display.ssd1306_command(0xA0);
+
   display.clearDisplay();
   display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);

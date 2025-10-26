@@ -3,57 +3,60 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:gravity="center">
+    android:padding="16dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="AR Glasses Controller"
+        android:text="Navigation"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:layout_marginBottom="32dp" />
+        android:layout_marginBottom="24dp" />
 
-    <Button
-        android:id="@+id/btnScan"
+    <EditText
+        android:id="@+id/etDestination"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Scan & Connect"
+        android:hint="Enter destination address"
+        android:inputType="textPostalAddress"
+        android:minHeight="48dp"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/btnStartNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start Navigation"
         android:textSize="16sp"
         android:layout_marginBottom="16dp" />
 
     <Button
-        android:id="@+id/btnPermission"
+        android:id="@+id/btnStopNav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Notification Permission"
+        android:text="Stop Navigation"
         android:textSize="16sp"
-        android:layout_marginBottom="16dp" />
-
-    <Button
-        android:id="@+id/btnNavigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Navigation"
-        android:textSize="16sp"
-        android:layout_marginBottom="16dp" />
-
-    <Button
-        android:id="@+id/btnSyncTime"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Sync Time"
-        android:textSize="16sp"
-        android:layout_marginBottom="32dp" />
+        android:enabled="false"
+        android:layout_marginBottom="24dp" />
 
     <TextView
-        android:id="@+id/tvStatus"
+        android:id="@+id/tvNavStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Status: Disconnected"
+        android:text="Status: Ready"
         android:textSize="16sp"
-        android:gravity="center"
-        android:padding="16dp"
+        android:padding="12dp"
+        android:background="@android:color/darker_gray"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/tvCurrentStep"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Current Step: None"
+        android:textSize="14sp"
+        android:padding="12dp"
         android:background="@android:color/darker_gray"
         android:textColor="@android:color/white" />
 

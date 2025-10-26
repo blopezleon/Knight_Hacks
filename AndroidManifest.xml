@@ -16,6 +16,9 @@
     
     <!-- Notification listener permission -->
     <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" />
+    
+    <!-- Internet permission for Google Maps API -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -36,6 +39,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <activity
+            android:name=".NavigationActivity"
+            android:exported="false"
+            android:label="Navigation" />
         
         <!-- Notification Listener Service -->
         <service

@@ -46,16 +46,30 @@ class MainActivity : AppCompatActivity() {
         private const val NOTIFICATION_RECEIVED = "com.arglasses.app.NOTIFICATION_RECEIVED"
         private const val EXTRA_APP_NAME = "app_name"
         private const val EXTRA_TITLE = "title"
+        
+        // Shared BLE objects for NavigationActivity
+        var bluetoothGatt: BluetoothGatt? = null
+        var bluetoothCharacteristic: BluetoothGattCharacteristic? = null
+        
+        fun sendDataToESP32(data: String) {
+            if (bluetoothCharacteristic != null && bluetoothGatt != null) {
+                bluetoothCharacteristic?.value = data.toByteArray()
+                bluetoothGatt?.writeCharacteristic(bluetoothCharacteristic)
+                Log.d(TAG, "Sent data: $data")
+            } else {
+                Log.w(TAG, "Cannot send data - not connected")
+            }
+        }
     }
     
     private lateinit var btnScan: Button
     private lateinit var btnPermission: Button
+    private lateinit var btnNavigation: Button
+    private lateinit var btnSyncTime: Button
     private lateinit var tvStatus: TextView
     
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothLeScanner: BluetoothLeScanner? = null
-    private var bluetoothGatt: BluetoothGatt? = null
-    private var characteristic: BluetoothGattCharacteristic? = null
     
     private val handler = Handler(Looper.getMainLooper())
     private val timeSyncRunnable = object : Runnable {
@@ -99,11 +113,23 @@ class MainActivity : AppCompatActivity() {
         btnPermission.setOnClickListener {
             openNotificationSettings()
         }
+        
+        btnNavigation.setOnClickListener {
+            val intent = Intent(this, NavigationActivity::class.java)
+            startActivity(intent)
+        }
+        
+        btnSyncTime.setOnClickListener {
+            syncTime()
+            Toast.makeText(this, "Time synced!", Toast.LENGTH_SHORT).show()
+        }
     }
     
     private fun initViews() {
         btnScan = findViewById(R.id.btnScan)
         btnPermission = findViewById(R.id.btnPermission)
+        btnNavigation = findViewById(R.id.btnNavigation)
+        btnSyncTime = findViewById(R.id.btnSyncTime)
         tvStatus = findViewById(R.id.tvStatus)
     }
     
@@ -194,7 +220,7 @@ class MainActivity : AppCompatActivity() {
         tvStatus.text = "Status: Connecting..."
         
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-            bluetoothGatt = device.connectGatt(this, false, gattCallback)
+            MainActivity.bluetoothGatt = device.connectGatt(this, false, gattCallback)
         }
     }
     
@@ -209,8 +235,8 @@ class MainActivity : AppCompatActivity() {
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     Log.d(TAG, "Disconnected from GATT server")
                     tvStatus.text = "Status: Disconnected"
-                    bluetoothGatt = null
-                    characteristic = null
+                    MainActivity.bluetoothGatt = null
+                    MainActivity.bluetoothCharacteristic = null
                 }
             }
         }
@@ -218,9 +244,9 @@ class MainActivity : AppCompatActivity() {
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 val service = gatt?.getService(java.util.UUID.fromString(SERVICE_UUID))
-                characteristic = service?.getCharacteristic(java.util.UUID.fromString(CHARACTERISTIC_UUID))
+                MainActivity.bluetoothCharacteristic = service?.getCharacteristic(java.util.UUID.fromString(CHARACTERISTIC_UUID))
                 
-                if (characteristic != null) {
+                if (MainActivity.bluetoothCharacteristic != null) {
                     Log.d(TAG, "Characteristic found")
                     // Send initial time sync
                     syncTime()
@@ -255,14 +281,8 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun sendDataToESP32(data: String) {
-        if (characteristic != null && bluetoothGatt != null) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-                characteristic?.value = data.toByteArray()
-                bluetoothGatt?.writeCharacteristic(characteristic)
-                Log.d(TAG, "Sent data: $data")
-            }
-        } else {
-            Log.w(TAG, "Cannot send data - not connected")
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+            MainActivity.sendDataToESP32(data)
         }
     }
     
@@ -282,7 +302,7 @@ class MainActivity : AppCompatActivity() {
         handler.removeCallbacks(timeSyncRunnable)
         
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-            bluetoothGatt?.close()
+            MainActivity.bluetoothGatt?.close()
         }
     }
 }
